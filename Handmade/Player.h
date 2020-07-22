@@ -4,7 +4,6 @@
 #include "AABB.h"
 #include "Sound.h"
 
-const int SIZE_OF_TILES = 50;
 const int IMAGE_SIZE = 128;
 
 struct vector2
@@ -24,6 +23,8 @@ public:
 public:
 	void Update(int deltaTime);
 	bool Draw();
+	void SetPos(vector2 pos) { m_position = pos; }
+	vector2 GetPos() { return m_position; }
 	void SetPlayState(PlayState* state) { m_state = state; };
 	bool CheckCollision();
 	bool IsControllable() { return m_canControl; }

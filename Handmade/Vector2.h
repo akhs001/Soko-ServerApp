@@ -7,7 +7,7 @@ public:
 
 public:
 	void SetX(int xVal) { m_x = xVal; }
-	int GetX() { return m_x; }
+	int x() { return m_x; }
 	void SetY(int yVal) { m_y = yVal; }
 	int GetY() { return m_y; }
 

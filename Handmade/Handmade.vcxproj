@@ -158,6 +158,7 @@
     <ClInclude Include="Sprite.h" />
     <ClInclude Include="TCPConnection.h" />
     <ClInclude Include="Text.h" />
+    <ClInclude Include="TextBox.h" />
     <ClInclude Include="Utils.h" />
     <ClInclude Include="Vector.h" />
     <ClInclude Include="Vector2.h" />
@@ -185,6 +186,7 @@
     <ClCompile Include="Sprite.cpp" />
     <ClCompile Include="TCPConnection.cpp" />
     <ClCompile Include="Text.cpp" />
+    <ClCompile Include="TextBox.cpp" />
     <ClCompile Include="Utils.cpp" />
     <ClCompile Include="Vector2.cpp" />
   </ItemGroup>

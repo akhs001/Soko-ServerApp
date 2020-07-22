@@ -27,7 +27,6 @@ Player::Player(int x, int y,int size,  std::string ID)
 
 	m_WalkSnd.SetSound("P_MOVE");
 	m_WrongMove.SetSound("WRONG");
-
 }
 
 
@@ -88,7 +87,9 @@ bool Player::CheckCollision()
 float cnt = 0.0f;
 void Player::Update(int deltaTime)
 {
-	if (!IsControllable()) { return;  } //If this not my Player return
+	if (!IsControllable()) {
+		m_collider.SetPosition(m_position.x, m_position.y); 
+		return;  } //If this not my Player return
 
 	///****Just a counter to Prevent continues moving*****
 	if (cnt < 1.0f && !m_canMove)
@@ -114,8 +115,10 @@ void Player::Update(int deltaTime)
 		{
 			//Move the Player
 			m_WalkSnd.Play();
-			m_position.x -= GetSize();
+			m_position.x = m_position.x - GetSize();
+			m_state->UpdatePlayer();
 			m_canMove = false;
+			return;
 		}
 		else					//If we cant move
 		{
@@ -132,8 +135,10 @@ void Player::Update(int deltaTime)
 		if (CheckCollision())
 		{
 			m_WalkSnd.Play();
-			m_position.x += GetSize();
+			m_position.x = m_position.x + GetSize();
+			m_state->UpdatePlayer();
 			m_canMove = false;
+			return;
 		}
 		else
 		{
@@ -151,8 +156,10 @@ void Player::Update(int deltaTime)
 		if (CheckCollision())
 		{
 			m_WalkSnd.Play();
-			m_position.y -= GetSize();
+			m_position.y = m_position.y - GetSize();
+			m_state->UpdatePlayer();
 			m_canMove = false;
+			return;
 		}
 		else
 		{
@@ -170,8 +177,10 @@ void Player::Update(int deltaTime)
 		if (CheckCollision())
 		{
 			m_WalkSnd.Play();
-			m_position.y += GetSize();
+			m_position.y = m_position.y + GetSize();
+			m_state->UpdatePlayer();
 			m_canMove = false;
+			return;
 		}
 		else
 		{
@@ -181,6 +190,8 @@ void Player::Update(int deltaTime)
 			m_canMove = false;
 		}
 	}
+
+
 }
 
 bool Player::Draw()

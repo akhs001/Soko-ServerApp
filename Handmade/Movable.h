@@ -17,15 +17,17 @@ public:
 	bool Draw();
 	void SetPlayState(PlayState* state) { m_state = state; };
 	AABB GetCollider() { return m_collider;  }
+	vector2 GetPos() { return m_position;  }
 	void Move(Movement movement, int amount);
 	bool CanMove(Movement movement);
 	bool IsOnPlace() { return m_OnPlace;  }
 	void IsOnPlace(bool flag) { m_OnPlace = flag; }
-	int GetSize() { return m_size.GetX(); }
+	int GetSize() { return m_size.x; }
+		void SetPos(vector2 pos) { m_position = pos; }
 private:
 	Sprite m_image;
-	Vector2 m_position;
-	Vector2 m_size;
+	vector2 m_position;
+	vector2 m_size;
 	bool m_canMove;
 	AABB m_collider;
 	PlayState* m_state;

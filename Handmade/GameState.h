@@ -55,6 +55,8 @@ public:
 	virtual void StartGame(std::string level) {};
 	virtual void GoBack() {};
 	virtual void Quit() {};
+	virtual void IsMultiPlayer(bool flag) { }
+	virtual bool IsMultiPlayer() { return false; }
 };
 
 #endif

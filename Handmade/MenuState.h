@@ -56,7 +56,9 @@ public:
 	virtual void ShowLevels();
 	virtual void StartGame(std::string level);
 	virtual void Quit() { isQuitPressed = true; }
-	void CheckforLevels();
+	void CheckforLevels(bool multiplayer);
+	virtual void IsMultiPlayer(bool flag) { m_isMultiplayer = flag;  }
+	virtual bool IsMultiPlayer() { return m_isMultiplayer;  }
 private:
 	std::string FILENAME;
 	Background* bg;
@@ -67,6 +69,7 @@ private:
 	Sound m_snd;
 	bool isQuitPressed;
 	std::vector<Button*> LevelBtns;
+	bool m_isMultiplayer;
 };
 
 #endif

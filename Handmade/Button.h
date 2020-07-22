@@ -25,6 +25,8 @@ public:
 	void CanClick(bool flag);
 	int GetColor();
 	Vector2 GetPos();
+	void SetPos(Vector2 pos);
+	void SetLevel(std::string nameOfLevel) { m_levelAssigned = nameOfLevel; }
 	GameState* GetState();
 	bool IsLevel() { return m_isLevel;  }
 	void IsLevel(bool flag) {  m_isLevel =flag; }
@@ -36,6 +38,7 @@ private:
 	bool m_canClick;
 	Sound m_click;
 	std::string m_ID;
+	std::string m_levelAssigned;
 	Text m_text;
 	Sprite m_image;
 	Vector2 m_size;

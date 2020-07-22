@@ -2,9 +2,10 @@
 #include <string>
 #include <SDL.h>
 #include <SDL_net.h>
-#include <vector>
 
 
+
+class PlayState;
 
 class TCPConnection
 {
@@ -14,24 +15,23 @@ public:
 public :
 	bool Initialize(Uint16 port, IPaddress& ip);
 
-	IPaddress& GetIp();
-	std::string PrintUsername();
-	void SetUsername(std::string username);
-
 	virtual bool OpenSocket() ;
-	virtual bool Send(std::string& message, std::string sender, int index) ;
-	virtual bool Send(std::string& message) ;
 
-	virtual void Receive(std::string& message, std::string& name, int index) {};
-	virtual void Receive(std::string& message) {};
+	virtual bool Send(std::string& message) ;
+	virtual void ListenSocket() ;
+	IPaddress& Get_ip() { return m_ip;  }
+	 bool Receive(std::string& message) ;
 
 	virtual void CloseSocket() {};
-
+	void SetState(PlayState* state) { m_state = state; }
 	void ShutDown();
 
 private:
-	IPaddress m_IP;
+	SDLNet_SocketSet m_socketSet;
+	IPaddress m_ip;
 	std::string m_username;
-
+	TCPsocket m_listenSocket;
+	TCPsocket m_socket;
+	PlayState* m_state;
 };
 
