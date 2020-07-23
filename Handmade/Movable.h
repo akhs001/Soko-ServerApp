@@ -20,8 +20,6 @@ public:
 	vector2 GetPos() { return m_position;  }
 	void Move(Movement movement, int amount);
 	bool CanMove(Movement movement);
-	bool IsOnPlace() { return m_OnPlace;  }
-	void IsOnPlace(bool flag) { m_OnPlace = flag; }
 	int GetSize() { return m_size.x; }
 		void SetPos(vector2 pos) { m_position = pos; }
 private:
@@ -31,8 +29,8 @@ private:
 	bool m_canMove;
 	AABB m_collider;
 	PlayState* m_state;
-	bool m_OnPlace;
 	Sound m_onPlaceSnd;
 	Sound m_moveSnd;
+	bool AlreadyAdd;
 };
 

@@ -12,15 +12,17 @@ Movable::Movable(int x, int y,int size, std::string ID)
 
 		isSoundLoaded = true;
 	}
+	AlreadyAdd = false;
 	m_state = nullptr;
 	m_onPlaceSnd.SetSound("ONPLACE_SND");
+	m_onPlaceSnd.SetVolume(15);
 	m_moveSnd.SetSound("MOVE_SND");
+	m_moveSnd.SetVolume(15);
     m_canMove = true;
 	m_position.x = x;
     m_position.y =y;
     m_size.x = size;
 	m_size.y = size;
-	m_OnPlace = false;
     m_image.SetImageDimension(1, 1, IMAGE_SIZE, IMAGE_SIZE);
     m_image.SetSpriteDimension(m_size.x, m_size.y);
     m_image.SetImage(ID);
@@ -165,6 +167,7 @@ bool Movable::CanMove(Movement movement)
 		}
 	}
 
+
 	//Check walls
 	for (Cell* c : allCells)
 	{
@@ -176,15 +179,25 @@ bool Movable::CanMove(Movement movement)
 			{
 				//Check if c is passable or not
 				int numCell = c->GetTile();
-				if (numCell == 30)
+				if (numCell == 30 && AlreadyAdd == false)
+				{
+					AlreadyAdd = true;
+					m_onPlaceSnd.Play();
+
+					m_state->AddBallInPlace();
+				}
+				else if (numCell == 30 && AlreadyAdd)
 				{
 					m_onPlaceSnd.Play();
-					m_OnPlace = true;
-					m_state->CheckIfComplete();
+
 				}
 				else
 				{
-					m_OnPlace = false;
+					if (AlreadyAdd && c->IsWalkable())
+					{
+						AlreadyAdd = false;
+						m_state->MoveBallOutOfPlace();
+					}
 				}
 				
 				return c->IsWalkable();
@@ -197,15 +210,25 @@ bool Movable::CanMove(Movement movement)
 			{
 				//Check if c is passable or not
 				int numCell = c->GetTile();
-				if (numCell == 30)
+				if (numCell == 30 && AlreadyAdd == false)
+				{
+					AlreadyAdd = true;
+					m_onPlaceSnd.Play();
+
+					m_state->AddBallInPlace();
+				}
+				else if (numCell == 30 && AlreadyAdd)
 				{
 					m_onPlaceSnd.Play();
-					m_OnPlace = true;
-					m_state->CheckIfComplete();
+
 				}
 				else
 				{
-					m_OnPlace = false;
+					if (AlreadyAdd && c->IsWalkable())
+					{
+						AlreadyAdd = false;
+						m_state->MoveBallOutOfPlace();
+					}
 				}
 				return c->IsWalkable();
 
@@ -217,15 +240,23 @@ bool Movable::CanMove(Movement movement)
 			{
 				//Check if c is passable or not
 				int numCell = c->GetTile();
-				if (numCell == 30)
+				if (numCell == 30 && AlreadyAdd == false)
+				{
+					AlreadyAdd = true;
+					m_onPlaceSnd.Play();
+					m_state->AddBallInPlace();
+				}
+				else if (numCell == 30 && AlreadyAdd)
 				{
 					m_onPlaceSnd.Play();
-					m_OnPlace = true;
-					m_state->CheckIfComplete();
 				}
 				else
 				{
-					m_OnPlace = false;
+					if (AlreadyAdd && c->IsWalkable())
+					{
+						AlreadyAdd = false;
+						m_state->MoveBallOutOfPlace();
+					}
 				}
 				return c->IsWalkable();
 			}
@@ -236,15 +267,23 @@ bool Movable::CanMove(Movement movement)
 			{
 				//Check if c is passable or not
 				int numCell = c->GetTile();
-				if (numCell == 30)
+				if (numCell == 30 && AlreadyAdd == false)
+				{
+					AlreadyAdd = true;
+					m_onPlaceSnd.Play();
+					m_state->AddBallInPlace();
+				}
+				else if (numCell == 30 && AlreadyAdd)
 				{
 					m_onPlaceSnd.Play();
-					m_OnPlace = true;
-					m_state->CheckIfComplete();
 				}
 				else
 				{
-					m_OnPlace = false;
+					if (AlreadyAdd && c->IsWalkable())
+					{
+						AlreadyAdd = false;
+						m_state->MoveBallOutOfPlace();
+					}
 				}
 				return c->IsWalkable();
 			}

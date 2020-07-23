@@ -159,6 +159,7 @@
     <ClInclude Include="TCPConnection.h" />
     <ClInclude Include="Text.h" />
     <ClInclude Include="TextBox.h" />
+    <ClInclude Include="ToolTip.h" />
     <ClInclude Include="Utils.h" />
     <ClInclude Include="Vector.h" />
     <ClInclude Include="Vector2.h" />
@@ -187,6 +188,7 @@
     <ClCompile Include="TCPConnection.cpp" />
     <ClCompile Include="Text.cpp" />
     <ClCompile Include="TextBox.cpp" />
+    <ClCompile Include="ToolTip.cpp" />
     <ClCompile Include="Utils.cpp" />
     <ClCompile Include="Vector2.cpp" />
   </ItemGroup>

@@ -26,7 +26,9 @@ Player::Player(int x, int y,int size,  std::string ID)
 	m_collider.SetPosition(m_position.x, m_position.y);
 
 	m_WalkSnd.SetSound("P_MOVE");
+	m_WalkSnd.SetVolume(10);
 	m_WrongMove.SetSound("WRONG");
+	m_WrongMove.SetVolume(10);
 }
 
 

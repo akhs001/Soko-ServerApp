@@ -40,7 +40,7 @@ bool MenuState::OnEnter()
 	if (!isStaffLoaded)
 	{
 		
-		Sound::Load("Assets/Sounds/click.mp3", "CLICK");
+		Sound::Load("Assets/Sounds/click.wav", "CLICK");
 		Sound::Load("Assets/Sounds/wrongMove.wav", "WRONG");
 		Sound::Load("Assets/Sounds/PlayerMove.wav", "P_MOVE");
 		//Load Images
@@ -57,13 +57,13 @@ bool MenuState::OnEnter()
 
 	}
 
-	btn_SinglePlayer = new Button(10, 50, Vector2(300, 150), "Single Player", "BUTTON",false);
+	btn_SinglePlayer = new Button(10, 50, Vector2::vector2({ 300, 150 }), "Single Player", "BUTTON", false);
 	btn_SinglePlayer->SetMenuState(this);
 
-	btn_MultiPlayer = new Button(10, 200, Vector2(300, 150), "MultiPlayer", "BUTTON",false);
+	btn_MultiPlayer = new Button(10, 200, Vector2::vector2({ 300, 150 }), "MultiPlayer", "BUTTON", false);
 	btn_MultiPlayer->SetMenuState(this);
 
-	btn_Quit = new Button(10, 350, Vector2(300, 150), "Exit", "BUTTON",false);
+	btn_Quit = new Button(10, 350, Vector2::vector2({ 300, 150 }), "Exit", "BUTTON", false);
 	btn_Quit->SetMenuState(this);
 	//seed the random number generator
 	srand(static_cast<unsigned int>(time(0)));
@@ -161,27 +161,41 @@ void MenuState::CheckforLevels(bool multiplayer)
 	//Clear previous level buttons
 	LevelBtns.clear();
 
-	std::string LevelPath = "Assets/Levels/";
-	int c = 0;
+	std::string LevelPath = "";
+
+	if (multiplayer)
+	{
+		 LevelPath = "Assets/Levels/MultiPlayer/";
+	}
+	else
+	{
+		 LevelPath = "Assets/Levels/SinglePlayer/";
+	}
+	
+	int c = 1;
 	for (const auto& entry : fs::directory_iterator(LevelPath))
 	{
 		std::string name = entry.path().filename().string();
-		
-		Button* b = new Button( 0, 0 , Vector2( 50 , 50), std::to_string(c) , "BUTTON" , true);
-		b->SetMenuState(this);
-		b->SetLevel(name);
-		LevelBtns.push_back(b);
-		c+=1;
+		if ( name.substr( name.length() - 3, name.length()) == "bin")
+		{
+			Button* b = new Button(0, 0, Vector2::vector2({ 50 , 50 }), std::to_string(c), "BUTTON", true);
+				b->SetMenuState(this);
+				b->SetLevel(name);
+				LevelBtns.push_back(b);
+				c += 1;
+		}
+	
 	}
+	int rows = 10;
 	int _width = Screen::Instance()->GetResolution().x;
 	int _height = Screen::Instance()->GetResolution().y;
 
-	int  middleX = _width * 0.5f - (50 * 5 * 0.5f);
-	int  middleY = _height * 0.5f - (50 * 5 * 0.5f);
+	int  middleX = _width * 0.5f - (50 * rows * 0.5f);
+	int  middleY = _height * 0.5f - (50 * rows * 0.5f);
 	c = 0;
-	for (int i = 0; i < 5; i++)
+	for (int i = 0; i < rows; i++)
 	{
-		for (int j = 0; j < 5; j++)
+		for (int j = 0; j < rows; j++)
 		{
 			if (c > LevelBtns.size() - 1) { break; }
 			LevelBtns[c]->SetPos({middleX+ j * 50,middleY+ i * 50 } );

@@ -1,6 +1,7 @@
 #ifndef PLAY_STATE_H
 #define PLAY_STATE_H
 
+#include <iostream>
 #include <vector>
 #include "Background.h"
 #include "GameObject.h"
@@ -48,7 +49,10 @@ public:	//My staff
 	void CheckIfComplete();
 	virtual std::string GetFilename() { return filename;  }
 	virtual void StartGame( std::string fileName);			//Load the Level from the file 
-
+	void AddBallInPlace() { BallsOnPlace++;  std::cout << "Ball Add in place " << BallsOnPlace << "/" <<  TotalBalls << std::endl; }
+	void MoveBallOutOfPlace() { BallsOnPlace--;   std::cout << "Ball removed from place " << BallsOnPlace << "/" << TotalBalls << std::endl;}
+	int GetBallsOnPlace() { return BallsOnPlace;  }
+	int GetTotalBalls() { return TotalBalls;  }
 	//SYNC MOVEMENT
 	void UpdateMovables();
 	void UpdateMovables(std::string Data);
@@ -77,6 +81,8 @@ private:
 	bool isLevelComplete;
 	Button* btn_Back;
 	Button* btn_Reset;
+	int TotalBalls;
+	int BallsOnPlace;
 };
 
 #endif

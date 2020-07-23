@@ -40,22 +40,24 @@ bool PlayState::OnEnter()
 {
 	//Send the State to TCPClass
 	m_Server.SetState(this);
-
+	TotalBalls = 0;
 	isBackPressed = false;
 	m_image = new Background("Assets/Images/BG/bg.png");
 
 	//Create the button
-	btn_Back = new Button(10, 10, Vector2(100, 50), "BACK", "BUTTON",false);
+	btn_Back = new Button(10, 10, Vector2::vector2({ 100, 50 }), "BACK", "BUTTON", false);
 	btn_Back->SetMenuState(this);
-	btn_Reset = new Button(10, 70, Vector2(100, 50), "RESET", "BUTTON", false);
+	btn_Reset = new Button(10, 70, Vector2::vector2({ 100, 50 }), "RESET", "BUTTON", false);
 	btn_Reset->SetMenuState(this);
 
 	if (filename != nullptr && !m_isMultiplayer)
 	{
+		//Start SinglePlayer game Instantly
 		StartGame(filename);
 	}
 	else
 	{
+		//Else Start A multiplayer session and wait for opponent
 		std::cout << "MutiPlayer Game started" << std::endl;
 		if (m_Server.Initialize(1255,m_Server.Get_ip()))
 		{
@@ -66,7 +68,11 @@ bool PlayState::OnEnter()
 		{
 			std::cout << "Socket Oppened" << std::endl;
 		}
+		//I start the level first and save it to A variable
 		StartGame(filename);
+		//Then the listen is running waiting for second player
+		//When a player connects I send the level to client using the 
+		//Listen socket function
 		m_Server.ListenSocket();
 
 		std::cout << "Game Started" << std::endl;
@@ -80,6 +86,10 @@ bool PlayState::OnEnter()
 float counter = 0.0f;
 GameState* PlayState::Update(int deltaTime)
 {
+	//Check if the level is complete
+	CheckIfComplete();
+
+
 	std::string data;
 	//receive message
 
@@ -114,11 +124,12 @@ GameState* PlayState::Update(int deltaTime)
 	{
 		counter += 0.1f;
 
-		if (counter > 10)
+		if (counter > 5)
 		{
 			Utils::ShowMessage("Level Cleared", "Good Job");
-			isLevelComplete = false;
 			counter = 0.0f;
+			isLevelComplete = false;
+			return new MenuState;
 			//Save Progress
 			//TODO
 		}
@@ -232,6 +243,9 @@ void PlayState::StartGame( std::string fileName)
 	Movables.clear();
 	Players.clear();
 	m_Tiles.clear();
+	TotalBalls = 0;
+	BallsOnPlace = 0;
+
 
 	std::ifstream file(fileName, std::ios_base::binary);
 
@@ -282,6 +296,7 @@ void PlayState::StartGame( std::string fileName)
 				Movable* ball = new Movable(i * tileS + middleX, j * tileS + middleY, tileS, std::to_string(32));
 				ball->SetPlayState(this);
 				Movables.push_back(ball);
+				TotalBalls++;
 			}
 			else if (cellNumber == 28 || cellNumber == 29)		//If the tile is Player Put the player 28= Player 1 , 29= Player2
 			{
@@ -320,10 +335,43 @@ void PlayState::StartGame( std::string fileName)
 }
 
 
+void PlayState::SetPlayer(int player, Player& playerObject)
+{
+	switch (player)
+	{
+	case 1:
+		m_Player1 = &playerObject;
+		Players.push_back(m_Player1);
+		break;
+	case 2:
+		m_Player2 = &playerObject;
+		Players.push_back(m_Player2);
+		break;
+	}
+}
+
+void PlayState::CheckIfComplete()
+{
+	if (BallsOnPlace == TotalBalls)
+	{
+		//Level complete
+		isLevelComplete = true;
+	}
+	else
+	{
+		isLevelComplete = false;
+	}
+
+
+}
+
+
+//====================NETWORKING CODE =============================//
+
 void PlayState::UpdateMovables(std::string Data)
 {
 	//Get All the Positions
-
+	if (!IsMultiPlayer()) { return; }
 	std::vector < std::string > Positions = Utils::Split(Data, ',');
 
 	int c = 0;
@@ -340,6 +388,7 @@ void PlayState::UpdateMovables(std::string Data)
 
 void PlayState::UpdatePlayer()
 {
+	if (!IsMultiPlayer()) { return; }
 	std::string positions = "M";
 
 	for (Player* p : Players)
@@ -352,6 +401,7 @@ void PlayState::UpdatePlayer()
 
 void PlayState::UpdateClientPosition(std::string Data)
 {
+	if (!IsMultiPlayer()) { return; }
 	std::vector < std::string > Positions = Utils::Split(Data, ',');
 
 	int c = 0;
@@ -369,6 +419,7 @@ void PlayState::UpdateClientPosition(std::string Data)
 
 void PlayState::UpdateMovables()
 {
+	if (!IsMultiPlayer()) { return; }
 	std::string positions = "P";
 
 	for (Movable* m : Movables)
@@ -379,37 +430,9 @@ void PlayState::UpdateMovables()
 	m_Server.Send(positions);
 }
 
+//====================NETWORKING CODE =============================//
 
 
-void PlayState::SetPlayer(int player,  Player& playerObject)
-{
-	switch (player)
-	{
-	case 1:
-		m_Player1 = &playerObject;
-		Players.push_back(m_Player1);
-		break;
-	case 2:
-		m_Player2 = &playerObject;
-		Players.push_back(m_Player2);
-		break;
-	}
-}
-
-void PlayState::CheckIfComplete()
-{
-	for (Movable* m : Movables)
-	{
-		if (!m->IsOnPlace())
-		{
-			isLevelComplete = false;
-			return;
-		}
-	}
-	//Level complete
-	isLevelComplete = true;
-
-}
 
 
 

@@ -91,13 +91,15 @@ void TCPConnection::ListenSocket()
 	{
 		SDLNet_TCP_AddSocket(m_socketSet, m_socket);
 		std::cout << "Othet Player Connected" << std::endl;
-		SDLNet_TCP_Close(m_listenSocket);	//Close the listen socket.
+		SDLNet_TCP_Close(m_listenSocket);	
+		//Close the listen socket.
+		//Actualy i can have many Players connected to the game
+		//But for this game I only wnat two Players.
 
-		//HAVE TO SEND THE LEVEL HERE
-		
+		//Prepair the level Data
 		std::string theLevel = "L" + m_state->GetLevelData();
 
-		//Send();
+		//Send the level to client
 		Send(theLevel);
 	}
 
