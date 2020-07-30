@@ -18,18 +18,18 @@ public :
 	virtual bool OpenSocket() ;
 
 	virtual bool Send(std::string& message) ;
-	virtual void ListenSocket() ;
+	virtual bool ListenSocket() ;
 	IPaddress& Get_ip() { return m_ip;  }
 	 bool Receive(std::string& message) ;
 
-	virtual void CloseSocket() {};
+	virtual void CloseSocket() ;
 	void SetState(PlayState* state) { m_state = state; }
 	void ShutDown();
 
 private:
 	SDLNet_SocketSet m_socketSet;
 	IPaddress m_ip;
-	std::string m_username;
+
 	TCPsocket m_listenSocket;
 	TCPsocket m_socket;
 	PlayState* m_state;

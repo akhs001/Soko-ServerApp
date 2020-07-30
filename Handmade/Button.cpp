@@ -7,14 +7,14 @@
 #include "MenuState.h"
 
 
-static bool isLoaded = false;
 int currentBoardSize = 0;
-
+bool isLoaded = false;
 
 Button::Button(int  x,int  y , Vector2::vector2 size, const std::string& text ,const std::string& ID , bool isLevel)
 {
 	if (!isLoaded)
 	{
+		//Load Image
 		Sprite::Load("Assets/level_select/bg.png", "BUTTON");
 		isLoaded = true;
 	}
@@ -38,7 +38,7 @@ Button::Button(int  x,int  y , Vector2::vector2 size, const std::string& text ,c
 		m_image.SetImageDimension(1, 1, 1307, 1457);
 	}
 	
-	m_image.SetImage(m_ID);
+	m_image.SetImage("BUTTON");
 	//Text
 	m_text.SetFont("FONT");
 	if (isLevel)		//If is level the button is different
@@ -63,7 +63,7 @@ Button::Button(int  x,int  y , Vector2::vector2 size, const std::string& text ,c
 Button::~Button()
 {
 	isLoaded = false;
-	Sprite::Unload(m_ID);
+	m_image.Unload("BUTTON");
 }
 
 float ctr = 0.0f;
@@ -82,8 +82,17 @@ void Button::Update(int deltaTime)
 
 	if (isHover() && !isTooltip && m_isLevel)
 	{
-		//Create the path
-		std::string file = "Assets/Levels/SinglePlayer/" + m_levelAssigned;
+		std::string file;
+		//Create 'the path
+		if (!m_state->IsMultiPlayer())
+		{
+		 file = "Assets/Levels/SinglePlayer/" + m_levelAssigned;
+		} 
+		else
+		{
+			file = "Assets/Levels/MultiPlayer/" + m_levelAssigned;
+		}
+		
 		file = file.substr(0, file.length() - 3);
 		file += "png";
 		std::cout<< file << std::endl;
@@ -121,7 +130,7 @@ void Button::Update(int deltaTime)
 			}
 			
 			//And open the level
-			m_state->StartGame(fileLevel);
+			m_state->StartGame(fileLevel, std::stoi(m_text.GetText()));
 			return;
 		}
 
@@ -155,7 +164,7 @@ void Button::Update(int deltaTime)
 		//if we press reset
 		if (m_text.GetText() == "RESET")
 		{
-			m_state->StartGame(m_state->GetFilename());
+			m_state->StartGame(m_state->GetFilename(), m_state->GetCurrentLevel());
 			return;
 		}
 	}

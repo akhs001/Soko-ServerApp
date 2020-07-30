@@ -35,7 +35,7 @@ Player::Player(int x, int y,int size,  std::string ID)
 
 Player::~Player()
 {
-	m_image.Unload();
+	//m_image.Unload();
 }
 
 
@@ -93,6 +93,11 @@ void Player::Update(int deltaTime)
 		m_collider.SetPosition(m_position.x, m_position.y); 
 		return;  } //If this not my Player return
 
+	if (m_state->IsMultiPlayer() && !m_state->IsGaneStarted())
+	{
+		return;
+	}
+
 	///****Just a counter to Prevent continues moving*****
 	if (cnt < 1.0f && !m_canMove)
 	{
@@ -105,6 +110,8 @@ void Player::Update(int deltaTime)
 	}
 	cnt = 0.0f;
 	///****************************************************
+
+	
 
 	//CHECK INPUT
 	if (Input::Instance()->IsKeyPressed(HM_KEY_LEFT))

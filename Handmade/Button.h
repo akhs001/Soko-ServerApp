@@ -19,7 +19,7 @@ public:
 public:
 	virtual void Update(int deltaTime);
 	virtual bool Draw();
-	bool isHover();
+
 	bool isClicked();
 	bool CanClick();
 	void SetColor(int color);
@@ -50,5 +50,6 @@ private:
 	bool m_isLevel;
 	bool isTooltip;
 	ToolTip* m_tooltip;
+	bool isHover();
 };
 

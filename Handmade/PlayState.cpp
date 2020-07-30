@@ -1,4 +1,4 @@
-#include "EndState.h"
+
 #include "Game.h"
 #include "Input.h"
 #include "MenuState.h"
@@ -10,24 +10,24 @@
 #include "Movable.h"
 #include "Button.h"
 
-
-
-PlayState::PlayState()
+static bool isStaffLoaded = false;
+//Create the Dice mn 
+PlayState::PlayState(std::string file , bool Multiplayer, std::vector<LevelData> SavedData, int current)
 {
-	isLevelComplete = false;
+	m_myDice = nullptr;
+
+	if (Multiplayer)
+	{
+		enemyConnected = false;
+		m_Server = nullptr;
+		m_Player2 = nullptr;
+	}
+
+	currentLevel = current;
+	m_levels = SavedData;
 	m_Player1 = nullptr;
-	m_Player2 = nullptr;
+
 	m_level = "";
-	m_image = nullptr;
-	btn_Back = nullptr;
-	btn_Reset = nullptr;
-}
-PlayState::PlayState(std::string file , bool Multiplayer)
-{
-	m_Player1 = nullptr;
-	m_Player2 = nullptr;
-	m_level = "";
-	m_image = nullptr;
 	btn_Back = nullptr;
 	btn_Reset = nullptr;
 	m_isMultiplayer = Multiplayer;
@@ -38,11 +38,49 @@ PlayState::PlayState(std::string file , bool Multiplayer)
 //------------------------------------------------------------------------------------------------------
 bool PlayState::OnEnter()
 {
-	//Send the State to TCPClass
-	m_Server.SetState(this);
+
+
+	//if the game is multiplayer Create the server Object
+	if (m_isMultiplayer)
+	{
+		m_Server = new TCPConnection;
+		//Send the State to TCPClass
+		m_Server->SetState(this);
+	}
+	//Time for game to start 3 secs
+	m_timeToStart = 30;
+	
+	//Reset the balls
 	TotalBalls = 0;
+	BallsOnPlace = 0;
+
 	isBackPressed = false;
-	m_image = new Background("Assets/Images/BG/bg.png");
+	//Load All staff here
+	if (!isStaffLoaded)
+	{ 
+		Sprite::Load("Assets/Images/start_1.png", "STAR");
+		Sound::Load("Assets/Sounds/click.wav", "CLICK");
+		Sound::Load("Assets/Sounds/wrongMove.wav", "WRONG");
+		Sound::Load("Assets/Sounds/PlayerMove.wav", "P_MOVE");
+
+		Sprite::Load("Assets/Images/BG/bg.png", "BACK");
+		//load font resource into memory
+		Text::Load("Assets/Fonts/Quikhand.ttf", "Menu_Font", Text::FontSize::SMALL);
+		Text::Load("Assets/Fonts/Impact.ttf", "FONT", Text::FontSize::SMALL);
+		//Load the dices
+		for (size_t i = 1; i < 7; i++)
+		{
+			std::string name = "D" + std::to_string(i) + ".png";
+			Sprite::Load("Assets/Dice/" + name , "D" + std::to_string(i));
+		}
+		isStaffLoaded = true;
+
+	}
+
+
+	Background.SetImageDimension(1, 1, 1921, 1080);
+	Background.SetSpriteDimension(Screen::Instance()->GetResolution().x, Screen::Instance()->GetResolution().y);
+	Background.SetImage("BACK");
 
 	//Create the button
 	btn_Back = new Button(10, 10, Vector2::vector2({ 100, 50 }), "BACK", "BUTTON", false);
@@ -53,30 +91,37 @@ bool PlayState::OnEnter()
 	if (filename != nullptr && !m_isMultiplayer)
 	{
 		//Start SinglePlayer game Instantly
-		StartGame(filename);
+		StartGame(filename, currentLevel);
 	}
 	else
 	{
 		//Else Start A multiplayer session and wait for opponent
 		std::cout << "MutiPlayer Game started" << std::endl;
-		if (m_Server.Initialize(1255,m_Server.Get_ip()))
+		if (m_Server->Initialize(1255,m_Server->Get_ip()))
 		{
 			std::cout << "Server Initialized" << std::endl;
 		}
 
-		if (m_Server.OpenSocket())
+		if (m_Server->OpenSocket())
 		{
 			std::cout << "Socket Oppened" << std::endl;
 		}
 		//I start the level first and save it to A variable
-		StartGame(filename);
+		StartGame(filename , currentLevel);
 		//Then the listen is running waiting for second player
 		//When a player connects I send the level to client using the 
 		//Listen socket function
-		m_Server.ListenSocket();
+		isGameStarted = false;
 
-		std::cout << "Game Started" << std::endl;
+
+		int sy = Screen::Instance()->GetResolution().y / 2;
+		 t = new TextBox({10 ,sy/2 }, { 200,30 }, "Waiting for Player...");
+		m_texts.push_back(t);
+
 	}
+	m_myDice = new Dice;
+	m_myDice->CreateRanbdom(15, 300);
+
 
 	return true;
 }
@@ -84,14 +129,26 @@ bool PlayState::OnEnter()
 //function that reads key presses, mouse clicks and updates all game objects in scene
 //------------------------------------------------------------------------------------------------------
 float counter = 0.0f;
+
 GameState* PlayState::Update(int deltaTime)
 {
+	if (m_isMultiplayer && enemyConnected && !isGameStarted)
+	{
+		m_timeToStart -= 0.1f;
+
+		if (m_timeToStart <= 0.0f)
+		{
+			isGameStarted = true;
+			m_timeToStart = 30;
+			m_texts.clear();
+		}
+	}
+
 	//Check if the level is complete
 	CheckIfComplete();
 
 
 	std::string data;
-	//receive message
 
 	if (isBackPressed)
 	{
@@ -129,25 +186,35 @@ GameState* PlayState::Update(int deltaTime)
 			Utils::ShowMessage("Level Cleared", "Good Job");
 			counter = 0.0f;
 			isLevelComplete = false;
-			return new MenuState;
 			//Save Progress
-			//TODO
+			if (!IsMultiPlayer())
+			{
+				m_levels[currentLevel - 1].isPassed = 1;
+				SaveData(m_levels);
+				std::cout << "Data saved" << std::endl;
+			}
+			return new MenuState;
 		}
 	}
 
-	m_Server.Receive(data);
+	if (m_isMultiplayer && enemyConnected)
+	{
+		m_Server->Receive(data);
+	}
+
+	//Listen for Enemy
+	if (m_isMultiplayer && !enemyConnected)
+	{
+		if (m_Server->ListenSocket())
+		{
+			enemyConnected = true;
+			t->SetText("Get Ready");
+		}
+	}
+
+
 
 	
-
-	//loop through all game objects in vector and update them only if they are active
-	for (auto it = m_gameObjects.begin(); it != m_gameObjects.end(); it++)
-	{
-		if ((*it)->IsActive())
-		{
-			(*it)->Update(deltaTime);
-		}
-	}
-
 	//otherwise return reference to self
 	//so that we stay in this game state
 	return this;
@@ -158,20 +225,10 @@ GameState* PlayState::Update(int deltaTime)
 //------------------------------------------------------------------------------------------------------
 bool PlayState::Draw()
 {
-	//render the background image
-	m_image->Draw();
+	Background.Draw();
 
 	btn_Back->Draw();
 	btn_Reset->Draw();
-	//loop through all game objects in vector and 
-	//display them only if they are active and visible
-	for (auto it = m_gameObjects.begin(); it != m_gameObjects.end(); it++)
-	{
-		if ((*it)->IsActive() && (*it)->IsVisible())
-		{
-			(*it)->Draw();
-		}
-	}
 
 	for (Cell* c : m_Tiles)
 	{
@@ -192,6 +249,20 @@ bool PlayState::Draw()
 			p->Draw();
 	}
 	
+	for (TextBox* t : m_texts)
+	{
+		t->Draw();
+	}
+
+	//Draw my dice
+	if (m_myDice != nullptr)
+	{
+		m_myDice->Draw();
+	}
+
+	
+
+
 	return true;
 }
 //------------------------------------------------------------------------------------------------------
@@ -199,15 +270,22 @@ bool PlayState::Draw()
 //------------------------------------------------------------------------------------------------------
 void PlayState::OnExit()
 {
-	//SDLNet_DelSocket(m_Server.)
-	//loop through all game objects in vector and remove them from memory
-	for (auto it = m_gameObjects.begin(); it != m_gameObjects.end(); it++)
-	{
-		delete (*it);
-	}
-
-	m_gameObjects.clear();
+	delete m_Player1;
+	delete m_Player2 ;
+	delete btn_Back;
+	delete btn_Reset ;
+	delete m_myDice;
 	m_Tiles.clear();
+
+	Sprite::Unload("STAR");
+	Sound::Unload("CLICK");
+	Sound::Unload("WRONG");
+	Sound::Unload("P_MOVE");
+
+	Sprite::Unload("BACK");
+	Text::Unload("Menu_Font");
+	Text::Unload("FONT");
+	isStaffLoaded = false;
 }
 
 bool PlayState::OpenFile()
@@ -236,15 +314,29 @@ bool PlayState::OpenFile()
 
 }
 
+void PlayState::SaveData(std::vector<LevelData>& data)
+{
+	std::ofstream file("Save.dat", std::ios_base::binary);
+
+	for (std::size_t i = 0; i < data.size(); i++)
+	{
+		file.write((char*)&data[i].level, sizeof(int));
+		file.write((char*)&data[i].isPassed, sizeof(int));
+	}
 
 
-void PlayState::StartGame( std::string fileName)
+	file.close();
+	std::cout << "Data saved" << std::endl;
+}
+
+void PlayState::StartGame( std::string fileName , int level)
 {
 	Movables.clear();
 	Players.clear();
-	m_Tiles.clear();
+	//m_Tiles.clear();
 	TotalBalls = 0;
 	BallsOnPlace = 0;
+	currentLevel = level;
 
 
 	std::ifstream file(fileName, std::ios_base::binary);
@@ -282,18 +374,17 @@ void PlayState::StartGame( std::string fileName)
 			//check the Number of the cell
 			int cellNumber;
 			file.read((char*)&cellNumber, sizeof(int));
+	
 
-			//LOAD ONLY THE TILES WE NEED FOR THE LEVEL***
 			std::string name = std::to_string(cellNumber) + ".png";
 			std::string filename = "Assets/mapImages/Decor_Tiles/" + name;
 			Sprite::Load(filename, std::to_string(cellNumber));
-			//********************************************
-	
+
 			m_level += std::to_string( cellNumber )+ ",";
 
 			if (cellNumber == 32)
 			{
-				Movable* ball = new Movable(i * tileS + middleX, j * tileS + middleY, tileS, std::to_string(32));
+				Movable* ball = new Movable((int)(i * tileS + middleX),(int)( j * tileS + middleY), tileS, std::to_string(32));
 				ball->SetPlayState(this);
 				Movables.push_back(ball);
 				TotalBalls++;
@@ -305,14 +396,14 @@ void PlayState::StartGame( std::string fileName)
 				{
 				case 28:
 					Player * p1;
-					p1 = new Player(i * tileS + middleX, j * tileS + middleY, tileS, std::to_string(28));
+					p1 = new Player((int)(i * tileS + middleX), (int)(j * tileS + middleY), tileS, std::to_string(28));
 					p1->IsControllable(true);	//Can control this Player
 					p1->SetPlayState(this);		//Pass the PlayState to the Player
 					SetPlayer(1, *p1);			//Put the Player in the vector
 					break;
 				case 29:
 					Player * p2;
-					p2 = new Player(i * tileS + middleX, j * tileS + middleY, tileS, std::to_string(29));
+					p2 = new Player((int)(i * tileS + middleX),(int)( j * tileS + middleY), tileS, std::to_string(29));
 					p2->IsControllable(false);	//This Player is for Player2
 					p2->SetPlayState(this);		//Pass the PlayState to the Player
 					SetPlayer(1, *p2);			//Put the Player in the vector
@@ -324,7 +415,7 @@ void PlayState::StartGame( std::string fileName)
 				std::string name = std::to_string(cellNumber) + ".png";
 				std::string id = "TILE_" + std::to_string(cellNumber);
 				std::string filename = "Assets/mapImages/Decor_Tiles/" + name;
-				thecell = new Cell(i * tileS + middleX, j * tileS + middleY, tileS, std::to_string(cellNumber));
+				thecell = new Cell((int)(i * tileS + middleX),(int) (j * tileS + middleY), tileS, std::to_string(cellNumber));
 				thecell->SetTile(cellNumber);
 				thecell->SetWalkable(thecell->IsWalkable());		//Set if the cell is walkable or not
 				m_Tiles.push_back(thecell);
@@ -365,13 +456,17 @@ void PlayState::CheckIfComplete()
 
 }
 
+bool PlayState::IsGaneStarted()
+{
+	return isGameStarted;
+}
 
 //====================NETWORKING CODE =============================//
 
 void PlayState::UpdateMovables(std::string Data)
 {
 	//Get All the Positions
-	if (!IsMultiPlayer()) { return; }
+	if (!m_isMultiplayer) { return; }
 	std::vector < std::string > Positions = Utils::Split(Data, ',');
 
 	int c = 0;
@@ -388,7 +483,7 @@ void PlayState::UpdateMovables(std::string Data)
 
 void PlayState::UpdatePlayer()
 {
-	if (!IsMultiPlayer()) { return; }
+	if (!m_isMultiplayer) { return; }
 	std::string positions = "M";
 
 	for (Player* p : Players)
@@ -396,12 +491,28 @@ void PlayState::UpdatePlayer()
 		positions += std::to_string(p->GetPos().x) + ":" + std::to_string(p->GetPos().y) + ",";
 	}
 
-	m_Server.Send(positions);
+	m_Server->Send(positions);
 }
+
+
+
+void PlayState::UpdateMovables()
+{
+	if (!m_isMultiplayer) { return; }
+	std::string positions = "P";
+
+	for (Movable* m : Movables)
+	{
+		positions += std::to_string(m->GetPos().x) + ":" + std::to_string(m->GetPos().y) + ",";
+	}
+
+	m_Server->Send(positions);
+}
+
 
 void PlayState::UpdateClientPosition(std::string Data)
 {
-	if (!IsMultiPlayer()) { return; }
+	if (!m_isMultiplayer) { return; }
 	std::vector < std::string > Positions = Utils::Split(Data, ',');
 
 	int c = 0;
@@ -416,24 +527,3 @@ void PlayState::UpdateClientPosition(std::string Data)
 		c++;
 	}
 }
-
-void PlayState::UpdateMovables()
-{
-	if (!IsMultiPlayer()) { return; }
-	std::string positions = "P";
-
-	for (Movable* m : Movables)
-	{
-		positions += std::to_string( m->GetPos().x) + ":" + std::to_string( m->GetPos().y) + ",";
-	}
-
-	m_Server.Send(positions);
-}
-
-//====================NETWORKING CODE =============================//
-
-
-
-
-
-

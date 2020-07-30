@@ -1,19 +1,16 @@
 #include "TextBox.h"
 
-static bool isFontLoaded = false;
-TextBox::TextBox(int xpos , int ypos ,int sizex , int sizey ,std::string text)
+TextBox::TextBox(Vector2::vector2 pos, Vector2::vector2 size, std::string text)
 {
-	if (!isFontLoaded)
-	{
-		Text::Load("Assets/Fonts/Impact.ttf", "FONT", Text::FontSize::SMALL);
-		isFontLoaded = true;
-	}
-	posX = xpos;
-	posY = ypos;
+	m_size = 20;
+	m_pos = pos;
+
 	m_text.SetFont("FONT");
-	m_text.SetColor(1, 1, 1);
-	m_text.SetSize(sizex, sizey);
+	m_text.SetColor(0, 0, 0);
+
+	m_text.SetSize(size.x, size.y);
 	m_text.SetText(text);
+
 }
 
 TextBox::~TextBox()
@@ -23,16 +20,11 @@ TextBox::~TextBox()
 
 void TextBox::Draw()
 {
-	m_text.Draw(posX, posY);
+	m_text.Draw(m_pos.x, m_pos.y);
 }
 
-void TextBox::SetText(std::string text)
-{
-	m_text.SetText(text);
-}
 
-void TextBox::SetPos(int x, int y)
+void TextBox::SetText(std::string txt)
 {
-	posX = x;
-	posY = y;
+	m_text.SetText(txt);
 }

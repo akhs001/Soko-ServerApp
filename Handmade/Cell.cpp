@@ -1,8 +1,6 @@
 #include "Cell.h"
 
 
-
-
 Cell::Cell(int x, int y, int size , std::string ID)
 {
 	m_isWalkable = false;
@@ -23,7 +21,7 @@ Cell::Cell(int x, int y, int size , std::string ID)
 
 Cell::~Cell()
 {
-	m_image.Unload();
+	m_image.Unload(m_ID);
 }
 
 void Cell::Update(int deltaTime)
@@ -81,5 +79,7 @@ bool Cell::IsWalkable()
 	case 42:return false;
 	case 43:return false;
 	case 44:return false;
+	default:return false;
 	}
+	
 }

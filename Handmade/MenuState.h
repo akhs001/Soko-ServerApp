@@ -3,10 +3,12 @@
 
 
 #include <SDL.h>
-#include "Background.h"
 #include "GameState.h"
 #include "Sound.h"
 #include <vector>
+#include "star.h"
+
+
 
 class Button;
 
@@ -21,15 +23,17 @@ public:
 	virtual GameState* Update(int deltaTime);
 	virtual bool Draw();
 	virtual void OnExit();
+	void LoadData(std::vector< LevelData>& data);
 	virtual void ShowLevels();
-	virtual void StartGame(std::string level);
+	virtual void StartGame(std::string level, int levelNumber);
 	virtual void Quit() { isQuitPressed = true; }
 	void CheckforLevels(bool multiplayer);
 	virtual void IsMultiPlayer(bool flag) { m_isMultiplayer = flag;  }
 	virtual bool IsMultiPlayer() { return m_isMultiplayer;  }
 private:
+	Sprite Background;
+
 	std::string FILENAME;
-	Background* bg;
 	Button* btn_SinglePlayer;
 	Button* btn_MultiPlayer;
 	Button* btn_Quit;
@@ -38,6 +42,12 @@ private:
 	bool isQuitPressed;
 	std::vector<Button*> LevelBtns;
 	bool m_isMultiplayer;
+
+	//Levels 
+	std::vector<LevelData> m_levels;
+	int currentLevel;
+	std::vector<star*> m_stars;
+
 };
 
 #endif

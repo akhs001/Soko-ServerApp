@@ -1,72 +1,10 @@
 #include "Utils.h"
 #include <Windows.h>
 
-void Utils::draw()
-{
-		std::cout << "#===========================================#" << std::endl;
-		std::cout << "#     #           #####                      " << std::endl;
-		std::cout << "##   ## #   #    #     # #    #   ##   ##### " << std::endl;
-		std::cout << "# # # #  # #     #       #    #  #  #    #   " << std::endl;
-		std::cout << "#  #  #   #      #       ###### #    #   #   " << std::endl;
-		std::cout << "#     #   #      #       #    # ######   #   " << std::endl;
-		std::cout << "#     #   #      #     # #    # #    #   #   " << std::endl;
-		std::cout << "#     #   #       #####  #    # #    #   #   " << std::endl;
-		std::cout << "#===========================================#" << std::endl;
-	
-}
-
 
 void Utils::ShowMessage(std::string msg, std::string title)
 {
 	MessageBoxA(0, msg.c_str(), title.c_str(), MB_OK);
-}
-
-
-void Utils::lineBreak(int count)
-{
-	for (int i = 0; i < count; i++)
-	{
-		std::cout << std::endl;
-	}
-}
-
-std::string Utils::space(int count)
-{
-	std::string result = "";
-
-	for (int i = 0; i < count; i++)
-	{
-		result += " ";
-	}
-	return result;
-}
-
-void Utils::clearConsole()
-{
-	system("cls");
-	draw();
-}
-
-void Utils::TypeWrite(const std::string& text, unsigned int delay)
-{
-	//This is A function that i wrote to make an animated text like typewriter whitch is really cool.
-//Hope you like it Karsten
-
-		//I loop though all the chars
-	for (const char c : text)
-	{
-		std::cout << c;		//Print the char
-		SDL_Delay(delay);	//Wait 
-	}
-	//If the print finished I go to next line
-	lineBreak(1);
-
-}
-
-
-void Utils::Log(const std::string message)
-{
-	std::cout << message << std::endl;
 }
 
 

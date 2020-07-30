@@ -7,7 +7,7 @@ ToolTip::ToolTip( std::string filename)
 {
 	m_size = 350;
 	m_pos.x = Screen::Instance()->GetResolution().x - m_size ;
-	m_pos.y = Screen::Instance()->GetResolution().y * 0.5f - (m_size / 2);
+	m_pos.y =(int) (Screen::Instance()->GetResolution().y * 0.5f - (m_size / 2));
 	Sprite::Unload("TOOLTIP");
 	Sprite::Load(filename, "TOOLTIP");
 	Sprite::Load("Assets/level_select/table2.png", "BG");

@@ -3,7 +3,6 @@
 
 #include <iostream>
 #include <vector>
-#include "Background.h"
 #include "GameObject.h"
 #include "GameState.h"
 #include "Cell.h"
@@ -12,6 +11,8 @@
 #include <fstream>
 #include "Sprite.h"
 #include "TCPConnection.h"
+#include "TextBox.h"
+#include "Dice.h"
 
 const int MAX_WIDTH = 50;
 const int MAX_HEIGHT = 50;
@@ -20,12 +21,8 @@ class Button;
 class Movable;
 class PlayState : public GameState
 {
-
-
 public:
-
-	PlayState();
-	PlayState(std::string file , bool Multiplayer);
+	PlayState(std::string file , bool Multiplayer, std::vector<LevelData> SavedData, int current);
 	virtual ~PlayState() {}
 
 public:
@@ -48,11 +45,16 @@ public:	//My staff
 	void SetFileName(std::string fileName) { strcpy_s(filename,  fileName.c_str() ); }
 	void CheckIfComplete();
 	virtual std::string GetFilename() { return filename;  }
-	virtual void StartGame( std::string fileName);			//Load the Level from the file 
+	virtual void StartGame( std::string fileName,int  currentLevel);			//Load the Level from the file 
 	void AddBallInPlace() { BallsOnPlace++;  std::cout << "Ball Add in place " << BallsOnPlace << "/" <<  TotalBalls << std::endl; }
 	void MoveBallOutOfPlace() { BallsOnPlace--;   std::cout << "Ball removed from place " << BallsOnPlace << "/" << TotalBalls << std::endl;}
 	int GetBallsOnPlace() { return BallsOnPlace;  }
 	int GetTotalBalls() { return TotalBalls;  }
+	void SaveData(std::vector<LevelData>& data);
+	int GetCurrentLevel() { return currentLevel; }
+	void EnemyConnected() { enemyConnected = true;  }
+	bool IsGaneStarted();
+
 	//SYNC MOVEMENT
 	void UpdateMovables();
 	void UpdateMovables(std::string Data);
@@ -60,16 +62,15 @@ public:	//My staff
 
 	void UpdateClientPosition(std::string Data);
 
-
 	std::string GetLevelData() { return m_level;  }
 private:
-	Background* m_image;
-	std::vector<GameObject*> m_gameObjects;
+	Sprite Background;
 	//My staff
 	int tileS;
+	int currentLevel;
 	bool isBackPressed;
 	char filename[MAX_PATH];	//char array for storing the filePath
-	TCPConnection m_Server;
+	TCPConnection* m_Server;
 	std::string m_level;		//The current level Loaded
 	//The two Players *Only the player one is Playeable from this app
 	Player* m_Player1;
@@ -83,6 +84,18 @@ private:
 	Button* btn_Reset;
 	int TotalBalls;
 	int BallsOnPlace;
+	bool enemyConnected;
+	bool isGameStarted;
+	TextBox* t;
+	float m_timeToStart;
+
+	//Levels 
+	std::vector<LevelData> m_levels;
+
+	std::vector<TextBox*> m_texts;
+
+	Dice* m_myDice;
+
 };
 
 #endif
